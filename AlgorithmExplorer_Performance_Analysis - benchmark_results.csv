@@ -1,0 +1,113 @@
+Algorithm,Input Size,Dataset Type,Average Execution Time (ns),Average Comparisons,Average Swaps or Moves
+Bubble Sort,100,Random,"234,264","4,895","2,715"
+Selection Sort,100,Random,"120,667","4,950",95
+Insertion Sort,100,Random,"108,500","2,809","2,814"
+Merge Sort,100,Random,"62,361",532,"1,344"
+Quick Sort (First Pivot),100,Random,"33,542",590,265
+Quick Sort (Random Pivot),100,Random,"26,222",633,365
+Bubble Sort,500,Random,"670,403","124,659","62,154"
+Selection Sort,500,Random,"468,833","124,750",493
+Insertion Sort,500,Random,"332,917","62,647","62,653"
+Merge Sort,500,Random,"64,722","3,853","8,976"
+Quick Sort (First Pivot),500,Random,"45,764","4,490","2,076"
+Quick Sort (Random Pivot),500,Random,"60,139","5,396","2,557"
+Bubble Sort,1000,Random,"2,719,542","498,275","244,720"
+Selection Sort,1000,Random,"299,333","499,500",994
+Insertion Sort,1000,Random,"302,680","245,712","245,719"
+Merge Sort,1000,Random,"1,254,305","8,680","19,952"
+Quick Sort (First Pivot),1000,Random,"459,056","11,197","5,338"
+Quick Sort (Random Pivot),1000,Random,"516,819","10,610","5,438"
+Bubble Sort,2000,Random,"2,208,292","1,994,905","997,922"
+Selection Sort,2000,Random,"1,422,056","1,999,000","1,992"
+Insertion Sort,2000,Random,"1,097,000","999,913","999,921"
+Merge Sort,2000,Random,"312,500","19,363","43,904"
+Quick Sort (First Pivot),2000,Random,"56,611","24,208","10,674"
+Quick Sort (Random Pivot),2000,Random,"142,444","24,316","12,686"
+Bubble Sort,5000,Random,"11,847,667","12,493,584","6,198,874"
+Selection Sort,5000,Random,"6,582,013","12,497,500","4,991"
+Insertion Sort,5000,Random,"2,446,138","6,203,865","6,203,873"
+Merge Sort,5000,Random,"319,417","55,080","123,616"
+Quick Sort (First Pivot),5000,Random,"320,750","70,784","29,579"
+Quick Sort (Random Pivot),5000,Random,"693,931","71,182","33,043"
+Bubble Sort,10000,Random,"46,510,264","49,989,329","24,978,015"
+Selection Sort,10000,Random,"24,391,889","49,995,000","9,986"
+Insertion Sort,10000,Random,"9,661,416","24,988,006","24,988,014"
+Merge Sort,10000,Random,"815,569","120,257","267,232"
+Quick Sort (First Pivot),10000,Random,"628,097","154,334","72,235"
+Quick Sort (Random Pivot),10000,Random,"743,389","155,136","78,982"
+Bubble Sort,100,Sorted,56,99,0
+Selection Sort,100,Sorted,"3,250","4,950",0
+Insertion Sort,100,Sorted,153,99,99
+Merge Sort,100,Sorted,"2,542",356,"1,344"
+Quick Sort (First Pivot),100,Sorted,"4,041","4,950",0
+Quick Sort (Random Pivot),100,Sorted,"5,305",736,118
+Bubble Sort,500,Sorted,417,499,0
+Selection Sort,500,Sorted,"172,264","124,750",0
+Insertion Sort,500,Sorted,708,499,499
+Merge Sort,500,Sorted,"10,069","2,272","8,976"
+Quick Sort (First Pivot),500,Sorted,"95,722","124,750",0
+Quick Sort (Random Pivot),500,Sorted,"12,666","4,823",577
+Bubble Sort,1000,Sorted,389,999,0
+Selection Sort,1000,Sorted,"266,639","499,500",0
+Insertion Sort,1000,Sorted,"1,361",999,999
+Merge Sort,1000,Sorted,"23,764","5,044","19,952"
+Quick Sort (First Pivot),1000,Sorted,"433,111","499,500",0
+Quick Sort (Random Pivot),1000,Sorted,"24,820","10,494","1,164"
+Bubble Sort,2000,Sorted,709,"1,999",0
+Selection Sort,2000,Sorted,"959,000","1,999,000",0
+Insertion Sort,2000,Sorted,"2,694","1,999","1,999"
+Merge Sort,2000,Sorted,"48,194","11,088","43,904"
+Quick Sort (First Pivot),2000,Sorted,"1,468,833","1,999,000",0
+Quick Sort (Random Pivot),2000,Sorted,"59,722","25,351","2,348"
+Bubble Sort,5000,Sorted,"1,681","4,999",0
+Selection Sort,5000,Sorted,"6,277,403","12,497,500",0
+Insertion Sort,5000,Sorted,"6,750","4,999","4,999"
+Merge Sort,5000,Sorted,"906,986","32,004","123,616"
+Quick Sort (First Pivot),5000,Sorted,"10,587,056","12,497,500",0
+Quick Sort (Random Pivot),5000,Sorted,"137,069","70,776","5,851"
+Bubble Sort,10000,Sorted,"3,431","9,999",0
+Selection Sort,10000,Sorted,"25,978,375","49,995,000",0
+Insertion Sort,10000,Sorted,"13,486","9,999","9,999"
+Merge Sort,10000,Sorted,"306,417","69,008","267,232"
+Quick Sort (First Pivot),10000,Sorted,"36,954,083","49,995,000",0
+Quick Sort (Random Pivot),10000,Sorted,"307,764","160,215","11,662"
+Bubble Sort,100,Reverse,"212,042","4,950","4,950"
+Selection Sort,100,Reverse,"3,708","4,950",50
+Insertion Sort,100,Reverse,"2,097","4,950","5,049"
+Merge Sort,100,Reverse,"1,764",316,"1,344"
+Quick Sort (First Pivot),100,Reverse,"4,167","4,950",50
+Quick Sort (Random Pivot),100,Reverse,"2,708",615,312
+Bubble Sort,500,Reverse,"900,319","124,750","124,750"
+Selection Sort,500,Reverse,"130,875","124,750",250
+Insertion Sort,500,Reverse,"58,473","124,750","125,249"
+Merge Sort,500,Reverse,"11,903","2,216","8,976"
+Quick Sort (First Pivot),500,Reverse,"177,444","124,750",250
+Quick Sort (Random Pivot),500,Reverse,"15,667","4,856","2,051"
+Bubble Sort,1000,Reverse,"930,375","499,500","499,500"
+Selection Sort,1000,Reverse,"308,847","499,500",500
+Insertion Sort,1000,Reverse,"241,972","499,500","500,499"
+Merge Sort,1000,Reverse,"26,347","4,932","19,952"
+Quick Sort (First Pivot),1000,Reverse,"393,333","499,500",500
+Quick Sort (Random Pivot),1000,Reverse,"31,042","10,649","5,060"
+Bubble Sort,2000,Reverse,"3,652,083","1,999,000","1,999,000"
+Selection Sort,2000,Reverse,"1,165,722","1,999,000","1,000"
+Insertion Sort,2000,Reverse,"777,097","1,999,000","2,000,999"
+Merge Sort,2000,Reverse,"55,736","10,864","43,904"
+Quick Sort (First Pivot),2000,Reverse,"1,828,847","1,999,000","1,000"
+Quick Sort (Random Pivot),2000,Reverse,"70,333","25,396","11,259"
+Bubble Sort,5000,Reverse,"22,640,056","12,497,500","12,497,500"
+Selection Sort,5000,Reverse,"7,161,056","12,497,500","2,500"
+Insertion Sort,5000,Reverse,"4,723,820","12,497,500","12,502,499"
+Merge Sort,5000,Reverse,"146,458","29,804","123,616"
+Quick Sort (First Pivot),5000,Reverse,"9,021,112","12,497,500","2,500"
+Quick Sort (Random Pivot),5000,Reverse,"153,792","69,779","29,853"
+Bubble Sort,10000,Reverse,"82,601,042","49,995,000","49,995,000"
+Selection Sort,10000,Reverse,"27,480,764","49,995,000","5,000"
+Insertion Sort,10000,Reverse,"18,699,083","49,995,000","50,004,999"
+Merge Sort,10000,Reverse,"302,459","64,608","267,232"
+Quick Sort (First Pivot),10000,Reverse,"35,530,847","49,995,000","5,000"
+Quick Sort (Random Pivot),10000,Reverse,"313,444","155,188","63,905"
+Merge Sort,50000,Random (Large),"4,400,639","717,827","1,568,928"
+Quick Sort (Random Pivot),50000,Random (Large),"3,257,778","955,367","474,305"
+Merge Sort,100000,Random (Large),"9,141,472","1,536,132","3,337,856"
+Quick Sort (Random Pivot),100000,Random (Large),"6,827,070","2,036,801","1,081,545"
