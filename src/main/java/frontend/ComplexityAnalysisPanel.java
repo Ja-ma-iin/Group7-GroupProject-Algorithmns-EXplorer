@@ -1,0 +1,1334 @@
+
+package frontend;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.Arrays;
+
+public class ComplexityAnalysisPanel extends JPanel {
+
+    public interface Listener {
+        void runBenchmark(
+                int[] inputSizes,
+                String inputCondition,
+                int repetitions,
+                boolean includeLargeTests,
+                int[] customValues
+        );
+    }
+
+    private Listener listener;
+
+    private JComboBox<String> conditionCombo;
+    private JComboBox<String> sizeProfileCombo;
+    private JComboBox<String> inputModeCombo;
+
+    private JSpinner repetitionsSpinner;
+
+    private JTextField customSizesField;
+    private JTextField customValuesField;
+
+    private JLabel statusLabel;
+    private JLabel averageLabel;
+    private JLabel fastestLabel;
+
+    private JTable resultsTable;
+    private DefaultTableModel tableModel;
+
+    private PerformanceChart quadraticChart;
+    private PerformanceChart nLogNChart;
+
+    private final int[] STANDARD_SIZES = {
+            100, 500, 1000, 2000, 5000, 10000
+    };
+
+    private final int[] EXTENDED_SIZES = {
+            100, 500, 1000, 2000, 5000, 10000, 50000, 100000
+    };
+
+    public ComplexityAnalysisPanel() {
+        setLayout(new BorderLayout());
+        setBackground(UITheme.BACKGROUND);
+
+        buildInterface();
+    }
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
+
+    // =====================================================
+    // MAIN INTERFACE
+    // =====================================================
+
+    private void buildInterface() {
+
+        JPanel mainPanel = new JPanel();
+
+        mainPanel.setLayout(
+                new BoxLayout(mainPanel, BoxLayout.Y_AXIS)
+        );
+
+        mainPanel.setBackground(UITheme.BACKGROUND);
+
+        mainPanel.setBorder(
+                new EmptyBorder(25, 30, 25, 30)
+        );
+
+        JLabel title = new JLabel("Complexity Analysis");
+
+        title.setFont(UITheme.TITLE_FONT);
+        title.setForeground(UITheme.TEXT);
+
+        JLabel subtitle = new JLabel(
+                "Measure algorithm performance and compare theoretical complexity."
+        );
+
+        subtitle.setFont(UITheme.NORMAL_FONT);
+        subtitle.setForeground(UITheme.MUTED);
+
+        mainPanel.add(title);
+        mainPanel.add(Box.createVerticalStrut(6));
+        mainPanel.add(subtitle);
+        mainPanel.add(Box.createVerticalStrut(22));
+
+        // Standard benchmark controls
+        mainPanel.add(buildControls());
+        mainPanel.add(Box.createVerticalStrut(12));
+
+        // Custom input controls
+        mainPanel.add(buildCustomInputControls());
+        mainPanel.add(Box.createVerticalStrut(20));
+
+        // Summary cards
+        JPanel summaryPanel = new JPanel(
+                new GridLayout(1, 2, 15, 0)
+        );
+
+        summaryPanel.setOpaque(false);
+
+        averageLabel = new JLabel(
+                "Average execution time: --"
+        );
+
+        fastestLabel = new JLabel(
+                "Fastest algorithm: --"
+        );
+
+        summaryPanel.add(createSummaryCard(
+                "AVERAGE EXECUTION TIME",
+                averageLabel
+        ));
+
+        summaryPanel.add(createSummaryCard(
+                "FASTEST ALGORITHM",
+                fastestLabel
+        ));
+
+        mainPanel.add(summaryPanel);
+        mainPanel.add(Box.createVerticalStrut(20));
+
+        // Results table
+        mainPanel.add(createSectionTitle("Benchmark Results"));
+        mainPanel.add(Box.createVerticalStrut(10));
+
+        tableModel = new DefaultTableModel(
+                new String[]{
+                        "Algorithm",
+                        "Input Size",
+                        "Input Condition",
+                        "Average Time (ms)",
+                        "Comparisons",
+                        "Moves / Swaps",
+                        "Theoretical Time"
+                }, 0
+        ) {
+            @Override
+            public boolean isCellEditable(
+                    int row,
+                    int column) {
+                return false;
+            }
+        };
+
+        resultsTable = new JTable(tableModel);
+
+        resultsTable.setFont(UITheme.NORMAL_FONT);
+        resultsTable.setRowHeight(30);
+        resultsTable.setGridColor(UITheme.BORDER);
+
+        resultsTable.setSelectionBackground(
+                new Color(220, 232, 245)
+        );
+
+        resultsTable.getTableHeader().setFont(
+                UITheme.BUTTON_FONT
+        );
+
+        resultsTable.getTableHeader().setBackground(
+                new Color(235, 240, 246)
+        );
+
+        resultsTable.getTableHeader().setForeground(
+                UITheme.TEXT
+        );
+
+        resultsTable.setAutoResizeMode(
+                JTable.AUTO_RESIZE_OFF
+        );
+
+        int[] columnWidths = {
+                170, 90, 130, 140, 120, 120, 150
+        };
+
+        for (int i = 0; i < columnWidths.length; i++) {
+
+            resultsTable.getColumnModel()
+                    .getColumn(i)
+                    .setPreferredWidth(columnWidths[i]);
+        }
+
+        JScrollPane tableScroll = new JScrollPane(
+                resultsTable
+        );
+
+        tableScroll.setBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER)
+        );
+
+        tableScroll.setPreferredSize(
+                new Dimension(850, 220)
+        );
+
+        mainPanel.add(tableScroll);
+        mainPanel.add(Box.createVerticalStrut(22));
+
+        // Quadratic chart
+        mainPanel.add(createSectionTitle(
+                "O(n²) Algorithms Performance"
+        ));
+
+        mainPanel.add(Box.createVerticalStrut(10));
+
+        quadraticChart = new PerformanceChart(
+                new String[]{
+                        "Bubble Sort",
+                        "Selection Sort",
+                        "Insertion Sort"
+                }
+        );
+
+        quadraticChart.setPreferredSize(
+                new Dimension(850, 300)
+        );
+
+        mainPanel.add(
+                createChartContainer(quadraticChart)
+        );
+
+        mainPanel.add(Box.createVerticalStrut(22));
+
+        // N log N chart
+        mainPanel.add(createSectionTitle(
+                "O(n log n) Algorithms Performance"
+        ));
+
+        mainPanel.add(Box.createVerticalStrut(10));
+
+        nLogNChart = new PerformanceChart(
+                new String[]{
+                        "Merge Sort",
+                        "Quick Sort (First Pivot)",
+                        "Quick Sort (Random Pivot)"
+                }
+        );
+
+        nLogNChart.setPreferredSize(
+                new Dimension(850, 300)
+        );
+
+        mainPanel.add(
+                createChartContainer(nLogNChart)
+        );
+
+        mainPanel.add(Box.createVerticalStrut(22));
+
+        // Theoretical complexity reference
+        mainPanel.add(createSectionTitle(
+                "Theoretical Complexity Reference"
+        ));
+
+        mainPanel.add(Box.createVerticalStrut(10));
+
+        mainPanel.add(createComplexityReference());
+
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        statusLabel = new JLabel(
+                "Ready. Run a benchmark to display performance results."
+        );
+
+        statusLabel.setFont(UITheme.NORMAL_FONT);
+        statusLabel.setForeground(UITheme.MUTED);
+
+        mainPanel.add(statusLabel);
+
+        JScrollPane pageScroll = new JScrollPane(
+                mainPanel
+        );
+
+        pageScroll.setBorder(null);
+
+        pageScroll.getVerticalScrollBar()
+                .setUnitIncrement(16);
+
+        add(pageScroll, BorderLayout.CENTER);
+    }
+
+    // =====================================================
+    // STANDARD BENCHMARK CONTROLS
+    // =====================================================
+
+    private JPanel buildControls() {
+
+        JPanel panel = new JPanel(
+                new GridBagLayout()
+        );
+
+        panel.setBackground(Color.WHITE);
+
+        panel.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                UITheme.BORDER
+                        ),
+                        new EmptyBorder(18, 18, 18, 18)
+                )
+        );
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.insets = new Insets(5, 7, 5, 7);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        conditionCombo = new JComboBox<>(
+                new String[]{
+                        "Random",
+                        "Already Sorted",
+                        "Reverse Sorted"
+                }
+        );
+
+        sizeProfileCombo = new JComboBox<>(
+                new String[]{
+                        "Standard: 100 - 10,000",
+                        "Extended: 100 - 100,000"
+                }
+        );
+
+        repetitionsSpinner = new JSpinner(
+                new SpinnerNumberModel(3, 3, 10, 1)
+        );
+
+        styleCombo(conditionCombo);
+        styleCombo(sizeProfileCombo);
+
+        JButton runButton = new JButton(
+                "Run Benchmark"
+        );
+
+        runButton.setFont(UITheme.BUTTON_FONT);
+        runButton.setForeground(Color.WHITE);
+        runButton.setBackground(UITheme.PRIMARY);
+        runButton.setFocusPainted(false);
+
+        runButton.setBorder(
+                new EmptyBorder(11, 18, 11, 18)
+        );
+
+        runButton.setCursor(
+                new Cursor(Cursor.HAND_CURSOR)
+        );
+
+        runButton.addActionListener(
+                e -> runBenchmark()
+        );
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+
+        panel.add(
+                createField("Input Condition"),
+                gbc
+        );
+
+        gbc.gridx = 1;
+
+        panel.add(
+                createField("Input Sizes"),
+                gbc
+        );
+
+        gbc.gridx = 2;
+
+        panel.add(
+                createField("Repetitions"),
+                gbc
+        );
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+
+        panel.add(conditionCombo, gbc);
+
+        gbc.gridx = 1;
+
+        panel.add(sizeProfileCombo, gbc);
+
+        gbc.gridx = 2;
+
+        panel.add(repetitionsSpinner, gbc);
+
+        gbc.gridx = 3;
+        gbc.gridy = 1;
+
+        panel.add(runButton, gbc);
+
+        return panel;
+    }
+
+    // =====================================================
+    // CUSTOM INPUT CONTROLS
+    // =====================================================
+
+    private JPanel buildCustomInputControls() {
+
+        JPanel panel = new JPanel(
+                new GridBagLayout()
+        );
+
+        panel.setBackground(Color.WHITE);
+
+        panel.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                UITheme.BORDER
+                        ),
+                        new EmptyBorder(15, 18, 15, 18)
+                )
+        );
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.insets = new Insets(6, 7, 6, 7);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.weightx = 1;
+
+        JLabel heading = new JLabel(
+                "Custom Input Options"
+        );
+
+        heading.setFont(UITheme.HEADING_FONT);
+        heading.setForeground(UITheme.TEXT);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+
+        panel.add(heading, gbc);
+
+        gbc.gridwidth = 1;
+
+        inputModeCombo = new JComboBox<>(
+                new String[]{
+                        "Preset Sizes",
+                        "Custom Input Sizes",
+                        "Custom Array Values"
+                }
+        );
+
+        customSizesField = new JTextField(
+                "250, 750, 1500, 3000"
+        );
+
+        customValuesField = new JTextField(
+                "45, 12, 89, 3, 27, 6"
+        );
+
+        styleCombo(inputModeCombo);
+
+        customSizesField.setFont(
+                UITheme.NORMAL_FONT
+        );
+
+        customValuesField.setFont(
+                UITheme.NORMAL_FONT
+        );
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+
+        panel.add(
+                new JLabel("Input Mode"),
+                gbc
+        );
+
+        gbc.gridx = 1;
+
+        panel.add(inputModeCombo, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+
+        panel.add(
+                new JLabel("Custom Sizes (comma separated)"),
+                gbc
+        );
+
+        gbc.gridx = 1;
+
+        panel.add(customSizesField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+
+        panel.add(
+                new JLabel("Custom Array Values"),
+                gbc
+        );
+
+        gbc.gridx = 1;
+
+        panel.add(customValuesField, gbc);
+
+        JLabel instruction = new JLabel(
+                "Choose one input mode. Custom values are used exactly as entered."
+        );
+
+        instruction.setFont(
+                new Font("Segoe UI", Font.ITALIC, 11)
+        );
+
+        instruction.setForeground(UITheme.MUTED);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+
+        panel.add(instruction, gbc);
+
+        inputModeCombo.addActionListener(
+                e -> updateCustomInputFields()
+        );
+
+        updateCustomInputFields();
+
+        return panel;
+    }
+
+    private void updateCustomInputFields() {
+
+        int mode = inputModeCombo.getSelectedIndex();
+
+        customSizesField.setEnabled(mode == 1);
+
+        customValuesField.setEnabled(mode == 2);
+
+        sizeProfileCombo.setEnabled(mode == 0);
+        conditionCombo.setEnabled(mode != 2);
+
+        customSizesField.setToolTipText(
+                mode == 1
+                        ? "Enter sizes separated by commas."
+                        : "Select Custom Input Sizes to edit."
+        );
+
+        customValuesField.setToolTipText(
+                mode == 2
+                        ? "Enter integer values separated by commas."
+                        : "Select Custom Array Values to edit."
+        );
+    }
+
+    // =====================================================
+    // INPUT VALIDATION
+    // =====================================================
+
+    private int[] parseIntegerInput(String input) {
+
+        if (input == null || input.trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Please enter at least one number."
+            );
+        }
+
+        String[] parts = input.trim().split("[,\\s]+");
+
+        int[] values = new int[parts.length];
+
+        for (int i = 0; i < parts.length; i++) {
+
+            try {
+
+                values[i] = Integer.parseInt(parts[i]);
+
+            } catch (NumberFormatException ex) {
+
+                throw new IllegalArgumentException(
+                        "Invalid integer: " + parts[i]
+                );
+            }
+        }
+
+        return values;
+    }
+
+    private int[] parseCustomSizes() {
+
+        int[] sizes = parseIntegerInput(
+                customSizesField.getText()
+        );
+
+        for (int size : sizes) {
+
+            if (size <= 0) {
+
+                throw new IllegalArgumentException(
+                        "Input sizes must be positive."
+                );
+            }
+        }
+
+        return sizes;
+    }
+
+    private int[] parseCustomValues() {
+
+        return parseIntegerInput(
+                customValuesField.getText()
+        );
+    }
+
+    // =====================================================
+    // GENERAL UI HELPERS
+    // =====================================================
+
+    private JPanel createField(String labelText) {
+
+        JPanel field = new JPanel(
+                new BorderLayout(0, 6)
+        );
+
+        field.setOpaque(false);
+
+        JLabel label = new JLabel(labelText);
+
+        label.setFont(UITheme.BUTTON_FONT);
+        label.setForeground(UITheme.TEXT);
+
+        field.add(label, BorderLayout.NORTH);
+
+        return field;
+    }
+
+    private void styleCombo(JComboBox<String> combo) {
+
+        combo.setFont(UITheme.NORMAL_FONT);
+        combo.setBackground(Color.WHITE);
+
+        combo.setPreferredSize(
+                new Dimension(170, 34)
+        );
+    }
+
+    private JPanel createSummaryCard(
+            String heading,
+            JLabel value) {
+
+        JPanel card = new JPanel(
+                new BorderLayout(0, 10)
+        );
+
+        card.setBackground(Color.WHITE);
+
+        card.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                UITheme.BORDER
+                        ),
+                        new EmptyBorder(15, 18, 15, 18)
+                )
+        );
+
+        JLabel title = new JLabel(heading);
+
+        title.setFont(
+                new Font("Segoe UI", Font.BOLD, 11)
+        );
+
+        title.setForeground(UITheme.MUTED);
+
+        value.setFont(
+                new Font("Segoe UI", Font.BOLD, 16)
+        );
+
+        value.setForeground(UITheme.TEXT);
+
+        card.add(title, BorderLayout.NORTH);
+        card.add(value, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private JLabel createSectionTitle(String text) {
+
+        JLabel label = new JLabel(text);
+
+        label.setFont(UITheme.HEADING_FONT);
+        label.setForeground(UITheme.TEXT);
+
+        return label;
+    }
+
+    private JPanel createChartContainer(
+            PerformanceChart chart) {
+
+        JPanel container = new JPanel(
+                new BorderLayout()
+        );
+
+        container.setBackground(Color.WHITE);
+
+        container.setBorder(
+                BorderFactory.createLineBorder(
+                        UITheme.BORDER
+                )
+        );
+
+        container.add(
+                chart,
+                BorderLayout.CENTER
+        );
+
+        return container;
+    }
+
+    // =====================================================
+    // COMPLEXITY REFERENCE TABLE
+    // =====================================================
+
+    private JPanel createComplexityReference() {
+
+        String[][] data = {
+                {"Bubble Sort", "O(n²)", "O(n²)", "O(1)"},
+                {"Selection Sort", "O(n²)", "O(n²)", "O(1)"},
+                {"Insertion Sort", "O(n)", "O(n²)", "O(1)"},
+                {"Merge Sort", "O(n log n)", "O(n log n)", "O(n)"},
+                {"Quick Sort", "O(n log n)", "O(n²)", "O(log n)*"}
+        };
+
+        String[] columns = {
+                "Algorithm",
+                "Best Case",
+                "Worst Case",
+                "Extra Space"
+        };
+
+        JTable referenceTable = new JTable(
+                data,
+                columns
+        );
+
+        referenceTable.setFont(UITheme.NORMAL_FONT);
+        referenceTable.setRowHeight(27);
+
+        referenceTable.getTableHeader().setFont(
+                UITheme.BUTTON_FONT
+        );
+
+        referenceTable.getTableHeader().setBackground(
+                new Color(235, 240, 246)
+        );
+
+        JPanel panel = new JPanel(
+                new BorderLayout()
+        );
+
+        panel.setBackground(Color.WHITE);
+
+        panel.setBorder(
+                BorderFactory.createLineBorder(
+                        UITheme.BORDER
+                )
+        );
+
+        panel.add(
+                referenceTable.getTableHeader(),
+                BorderLayout.NORTH
+        );
+
+        panel.add(
+                referenceTable,
+                BorderLayout.CENTER
+        );
+
+        JLabel note = new JLabel(
+                "* Quick Sort typically uses O(log n) stack space, "
+                        + "but can use O(n) in the worst case."
+        );
+
+        note.setFont(
+                new Font("Segoe UI", Font.ITALIC, 11)
+        );
+
+        note.setForeground(UITheme.MUTED);
+
+        JPanel wrapper = new JPanel(
+                new BorderLayout(0, 7)
+        );
+
+        wrapper.setOpaque(false);
+
+        wrapper.add(panel, BorderLayout.CENTER);
+        wrapper.add(note, BorderLayout.SOUTH);
+
+        return wrapper;
+    }
+
+    // =====================================================
+    // RUN BENCHMARK
+    // =====================================================
+
+    private void runBenchmark() {
+
+        if (listener == null) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "The benchmark backend has not been connected yet.",
+                    "Backend Not Connected",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            return;
+        }
+
+        try {
+
+            int mode = inputModeCombo.getSelectedIndex();
+
+            int[] sizes;
+            int[] customValues = null;
+
+            String condition =
+                    (String) conditionCombo.getSelectedItem();
+
+            boolean includeLargeTests = false;
+
+            if (mode == 0) {
+
+                // Preset input sizes
+                sizes = sizeProfileCombo.getSelectedIndex() == 0
+                        ? Arrays.copyOf(
+                                STANDARD_SIZES,
+                                STANDARD_SIZES.length
+                        )
+                        : Arrays.copyOf(
+                                EXTENDED_SIZES,
+                                EXTENDED_SIZES.length
+                        );
+
+                includeLargeTests =
+                        sizeProfileCombo.getSelectedIndex() == 1;
+
+            } else if (mode == 1) {
+
+                // User-defined input sizes
+                sizes = parseCustomSizes();
+
+                includeLargeTests = Arrays.stream(sizes)
+                        .anyMatch(size -> size > 10000);
+
+            } else {
+
+                // User-defined array values
+                customValues = parseCustomValues();
+
+                sizes = new int[]{
+                        customValues.length
+                };
+
+                condition = "Custom Values";
+            }
+
+            int repetitions =
+                    (Integer) repetitionsSpinner.getValue();
+
+            tableModel.setRowCount(0);
+
+            quadraticChart.clear();
+            nLogNChart.clear();
+
+            statusLabel.setText(
+                    "Benchmark running..."
+            );
+
+            averageLabel.setText(
+                    "Average execution time: --"
+            );
+
+            fastestLabel.setText(
+                    "Fastest algorithm: --"
+            );
+
+            listener.runBenchmark(
+                    sizes,
+                    condition,
+                    repetitions,
+                    includeLargeTests,
+                    customValues
+            );
+
+        } catch (IllegalArgumentException ex) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    ex.getMessage(),
+                    "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    // =====================================================
+    // BACKEND CALLBACKS
+    // =====================================================
+
+    public void updateBenchmarkResults(
+            String[][] results) {
+
+        SwingUtilities.invokeLater(() -> {
+
+            tableModel.setRowCount(0);
+
+            for (String[] row : results) {
+                tableModel.addRow(row);
+            }
+
+            statusLabel.setText(
+                    "Benchmark results updated."
+            );
+        });
+    }
+
+    public void updateCharts(
+            int[] inputSizes,
+            String[] quadraticNames,
+            double[][] quadraticTimes,
+            String[] nLogNNames,
+            double[][] nLogNTimes) {
+
+        SwingUtilities.invokeLater(() -> {
+
+            quadraticChart.setData(
+                    inputSizes,
+                    quadraticNames,
+                    quadraticTimes
+            );
+
+            nLogNChart.setData(
+                    inputSizes,
+                    nLogNNames,
+                    nLogNTimes
+            );
+        });
+    }
+
+    public void updateSummary(
+            String averageTime,
+            String fastestAlgorithm) {
+
+        SwingUtilities.invokeLater(() -> {
+
+            averageLabel.setText(averageTime);
+            fastestLabel.setText(fastestAlgorithm);
+        });
+    }
+
+    public void showBenchmarkComplete(
+            String message) {
+
+        SwingUtilities.invokeLater(() -> {
+            statusLabel.setText(message);
+        });
+    }
+
+    // =====================================================
+    // PERFORMANCE LINE CHART
+    // =====================================================
+
+    private static class PerformanceChart extends JPanel {
+
+        private int[] inputSizes = new int[0];
+
+        private String[] algorithmNames = new String[0];
+
+        private double[][] executionTimes =
+                new double[0][];
+
+        private final Color[] lineColors = {
+                new Color(46, 116, 181),
+                new Color(220, 90, 70),
+                new Color(50, 150, 100),
+                new Color(150, 90, 180),
+                new Color(220, 160, 50),
+                new Color(70, 160, 170)
+        };
+
+        PerformanceChart(String[] defaultNames) {
+
+            algorithmNames = defaultNames;
+
+            setBackground(Color.WHITE);
+
+            setBorder(
+                    new EmptyBorder(15, 15, 15, 15)
+            );
+        }
+
+        void setData(
+                int[] sizes,
+                String[] names,
+                double[][] times) {
+
+            inputSizes = Arrays.copyOf(
+                    sizes,
+                    sizes.length
+            );
+
+            algorithmNames = Arrays.copyOf(
+                    names,
+                    names.length
+            );
+
+            executionTimes = new double[times.length][];
+
+            for (int i = 0; i < times.length; i++) {
+
+                executionTimes[i] = Arrays.copyOf(
+                        times[i],
+                        times[i].length
+                );
+            }
+
+            repaint();
+        }
+
+        void clear() {
+
+            inputSizes = new int[0];
+            executionTimes = new double[0][];
+
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+
+            super.paintComponent(g);
+
+            Graphics2D g2 = (Graphics2D) g.create();
+
+            g2.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON
+            );
+
+            if (inputSizes.length == 0
+                    || executionTimes.length == 0) {
+
+                g2.setColor(UITheme.MUTED);
+                g2.setFont(UITheme.NORMAL_FONT);
+
+                String message =
+                        "Performance chart will appear here.";
+
+                FontMetrics fm = g2.getFontMetrics();
+
+                g2.drawString(
+                        message,
+                        (getWidth() - fm.stringWidth(message)) / 2,
+                        getHeight() / 2
+                );
+
+                g2.dispose();
+                return;
+            }
+
+            int left = 75;
+            int right = getWidth() - 35;
+            int top = 35;
+            int bottom = getHeight() - 85;
+
+            if (right <= left || bottom <= top) {
+                g2.dispose();
+                return;
+            }
+
+            double maxTime = 0;
+
+            for (double[] series : executionTimes) {
+
+                for (double value : series) {
+
+                    if (Double.isFinite(value) && value >= 0) {
+
+                        maxTime = Math.max(
+                                maxTime,
+                                value
+                        );
+                    }
+                }
+            }
+
+            if (maxTime <= 0) {
+                maxTime = 1;
+            }
+
+            // Horizontal grid lines
+            g2.setFont(
+                    new Font("Segoe UI", Font.PLAIN, 10)
+            );
+
+            for (int i = 0; i <= 5; i++) {
+
+                int y = bottom
+                        - (i * (bottom - top) / 5);
+
+                double labelValue =
+                        maxTime * i / 5.0;
+
+                g2.setColor(
+                        new Color(230, 234, 239)
+                );
+
+                g2.drawLine(
+                        left,
+                        y,
+                        right,
+                        y
+                );
+
+                g2.setColor(UITheme.MUTED);
+
+                String label = String.format(
+                        "%.2f",
+                        labelValue
+                );
+
+                FontMetrics fm = g2.getFontMetrics();
+
+                g2.drawString(
+                        label,
+                        left - fm.stringWidth(label) - 8,
+                        y + 4
+                );
+            }
+
+            // Axes
+            g2.setColor(UITheme.TEXT);
+
+            g2.drawLine(
+                    left,
+                    top,
+                    left,
+                    bottom
+            );
+
+            g2.drawLine(
+                    left,
+                    bottom,
+                    right,
+                    bottom
+            );
+
+            // Plot algorithm lines
+            for (int a = 0;
+                    a < executionTimes.length;
+                    a++) {
+
+                double[] series = executionTimes[a];
+
+                g2.setColor(
+                        lineColors[a % lineColors.length]
+                );
+
+                g2.setStroke(
+                        new BasicStroke(
+                                2.2f,
+                                BasicStroke.CAP_ROUND,
+                                BasicStroke.JOIN_ROUND
+                        )
+                );
+
+                int previousX = -1;
+                int previousY = -1;
+
+                for (int i = 0;
+                        i < inputSizes.length
+                                && i < series.length;
+                        i++) {
+
+                    double value = series[i];
+
+                    if (!Double.isFinite(value)
+                            || value < 0) {
+
+                        previousX = -1;
+                        previousY = -1;
+
+                        continue;
+                    }
+
+                    int x;
+
+                    if (inputSizes.length == 1) {
+
+                        x = (left + right) / 2;
+
+                    } else {
+
+                        x = left + (
+                                i * (right - left)
+                                        / (inputSizes.length - 1)
+                        );
+                    }
+
+                    int y = bottom - (int) (
+                            (value / maxTime)
+                                    * (bottom - top)
+                    );
+
+                    if (previousX != -1) {
+
+                        g2.drawLine(
+                                previousX,
+                                previousY,
+                                x,
+                                y
+                        );
+                    }
+
+                    g2.fillOval(
+                            x - 4,
+                            y - 4,
+                            8,
+                            8
+                    );
+
+                    previousX = x;
+                    previousY = y;
+                }
+            }
+
+            // X-axis labels
+            g2.setColor(UITheme.MUTED);
+
+            for (int i = 0;
+                    i < inputSizes.length;
+                    i++) {
+
+                int x;
+
+                if (inputSizes.length == 1) {
+
+                    x = (left + right) / 2;
+
+                } else {
+
+                    x = left + (
+                            i * (right - left)
+                                    / (inputSizes.length - 1)
+                    );
+                }
+
+                String label = String.valueOf(
+                        inputSizes[i]
+                );
+
+                FontMetrics fm = g2.getFontMetrics();
+
+                g2.drawString(
+                        label,
+                        x - fm.stringWidth(label) / 2,
+                        bottom + 18
+                );
+            }
+
+            // Axis titles
+            g2.setColor(UITheme.TEXT);
+
+            g2.drawString(
+                    "Input Size (n)",
+                    (left + right) / 2 - 35,
+                    bottom + 38
+            );
+
+            g2.drawString(
+                    "Time (ms)",
+                    8,
+                    18
+            );
+
+            // Chart legend
+            int legendX = left;
+            int legendY = bottom + 62;
+
+            g2.setFont(
+                    new Font("Segoe UI", Font.PLAIN, 10)
+            );
+
+            for (int i = 0;
+                    i < algorithmNames.length;
+                    i++) {
+
+                g2.setColor(
+                        lineColors[i % lineColors.length]
+                );
+
+                g2.fillOval(
+                        legendX,
+                        legendY - 7,
+                        8,
+                        8
+                );
+
+                g2.setColor(UITheme.TEXT);
+
+                g2.drawString(
+                        algorithmNames[i],
+                        legendX + 13,
+                        legendY
+                );
+
+                FontMetrics fm = g2.getFontMetrics();
+
+                legendX += fm.stringWidth(
+                        algorithmNames[i]
+                ) + 35;
+
+                if (legendX > right - 120) {
+
+                    legendX = left;
+                    legendY += 16;
+                }
+            }
+
+            g2.dispose();
+        }
+    }
+}
